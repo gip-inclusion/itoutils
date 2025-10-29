@@ -22,11 +22,15 @@ classifiers = [
 github = "https://github.com/gip-inclusion/itoutils"
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptool]
 package-dir = {"" = "src"}
+
+[tool.setuptools_scm]
+version_scheme = "calver-by-date"
+local_scheme = "no-local-version"
 
 [dependency-groups]
 dev = [
