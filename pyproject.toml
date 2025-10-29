@@ -27,3 +27,20 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptool]
 package-dir = {"" = "src"}
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "ruff>=0.14.2",
+]
+
+[tool.ruff.lint]
+# see prefixes in https://beta.ruff.rs/docs/rules/
+select = [
+    "B",  # bugbear
+    "F",  # pyflakes
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "I",  # isort
+    "UP",  # pyupgrade
+]
