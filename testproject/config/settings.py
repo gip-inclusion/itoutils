@@ -72,3 +72,20 @@ STATIC_URL = "static/"
 # Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Logging
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {"()": "itoutils.django.logging.DataDogJSONFormatter"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "json"},
+        "null": {"class": "logging.NullHandler"},
+    },
+    "loggers": {
+        "": {"handlers": ["console"], "level": "INFO"},
+    },
+}
