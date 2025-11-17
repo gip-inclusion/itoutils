@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: ⏬ Install uv
-        uses: astral-sh/setup-uv@85856786d1ce8acfbcc2f13a5f3fbd6b938f9f41 # v7.1.2
+        uses: astral-sh/setup-uv@5a7eac68fb9809dea845d802897dc5c723910fa3 # v7.1.3
       - name: 🧮 Get the next version
         id: next-version
         run: echo "version=$(uvx setuptools-scm --strip-dev --format plain)" >> $GITHUB_OUTPUT
@@ -50,7 +50,7 @@ jobs:
         with:
           fetch-tags: true
       - name: ⏬ Install uv
-        uses: astral-sh/setup-uv@85856786d1ce8acfbcc2f13a5f3fbd6b938f9f41 # v7.1.2
+        uses: astral-sh/setup-uv@5a7eac68fb9809dea845d802897dc5c723910fa3 # v7.1.3
       - name: 🛠️ Build a binary wheel and a source tarball
         run: uv build
       - name: 📤 Store the distribution packages
