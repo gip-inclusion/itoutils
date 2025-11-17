@@ -31,6 +31,8 @@ package-dir = {"" = "src"}
 [tool.setuptools_scm]
 version_scheme = "calver-by-date"
 local_scheme = "no-local-version"
+# Fallback needed due to https://github.com/dependabot/dependabot-core/issues/12340
+fallback_version = "0.0.0"
 
 [dependency-groups]
 dev = [
