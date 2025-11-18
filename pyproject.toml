@@ -16,7 +16,13 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+
+    # Targeted frameworks
+    "Framework :: Pytest",
 ]
+
+[project.entry-points.pytest11]
+itoutils = "itoutils.pytest"
 
 [project.urls]
 github = "https://github.com/gip-inclusion/itoutils"
