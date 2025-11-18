@@ -40,6 +40,9 @@ dev = [
     "ruff>=0.14.2",
 ]
 
+[tool.ruff]
+line-length = 119
+
 [tool.ruff.lint]
 # see prefixes in https://beta.ruff.rs/docs/rules/
 select = [
