@@ -6,7 +6,7 @@
 
 # Global tasks.
 # =============================================================================
-LINTER_CHECKED_DIRS := src tests
+LINTER_CHECKED_DIRS := src tests testproject
 
 VIRTUAL_ENV ?= .venv
 export PATH := $(VIRTUAL_ENV)/bin:$(PATH)
@@ -31,4 +31,4 @@ fix: $(VIRTUAL_ENV)
 	ruff check --fix $(LINTER_CHECKED_DIRS)
 
 test: $(VIRTUAL_ENV)
-	pytest $(TARGET)
+	pytest --create-db $(TARGET)
