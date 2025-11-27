@@ -22,6 +22,13 @@ classifiers = [
     "Framework :: Pytest",
 ]
 
+[project.optional-dependencies]
+django = [
+    "django>=5.2",
+    "django-datadog-logger>=0.7.3",
+    "psycopg[binary]>=3.2.12",
+]
+
 [project.entry-points.pytest11]
 itoutils = "itoutils.pytest"
 
@@ -43,15 +50,10 @@ fallback_version = "0.0.0"
 
 [dependency-groups]
 dev = [
+    "itoutils[django]",
     "pytest>=8.4.2",
     "pytest-django>=4.11.1",
     "ruff>=0.14.2",
-    {include-group = "django"},
-]
-django = [
-    "django>=5.2",
-    "django-datadog-logger>=0.7.3",
-    "psycopg[binary]>=3.2.12",
 ]
 
 [tool.ruff]

@@ -73,36 +73,35 @@ wheels = [
 name = "itoutils"
 source = { editable = "." }
 
-[package.dev-dependencies]
-dev = [
+[package.optional-dependencies]
+django = [
     { name = "django" },
     { name = "django-datadog-logger" },
     { name = "psycopg", extra = ["binary"] },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "itoutils", extra = ["django"] },
     { name = "pytest" },
     { name = "pytest-django" },
     { name = "ruff" },
 ]
-django = [
-    { name = "django" },
-    { name = "django-datadog-logger" },
-    { name = "psycopg", extra = ["binary"] },
-]
 
 [package.metadata]
+requires-dist = [
+    { name = "django", marker = "extra == 'django'", specifier = ">=5.2" },
+    { name = "django-datadog-logger", marker = "extra == 'django'", specifier = ">=0.7.3" },
+    { name = "psycopg", extras = ["binary"], marker = "extra == 'django'", specifier = ">=3.2.12" },
+]
+provides-extras = ["django"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "django", specifier = ">=5.2" },
-    { name = "django-datadog-logger", specifier = ">=0.7.3" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.2.12" },
+    { name = "itoutils", extras = ["django"] },
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest-django", specifier = ">=4.11.1" },
     { name = "ruff", specifier = ">=0.14.2" },
-]
-django = [
-    { name = "django", specifier = ">=5.2" },
-    { name = "django-datadog-logger", specifier = ">=0.7.3" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.2.12" },
 ]
 
 [[package]]
