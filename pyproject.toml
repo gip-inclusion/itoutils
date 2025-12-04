@@ -55,6 +55,7 @@ dev = [
     "pytest>=8.4.2",
     "pytest-django>=4.11.1",
     "ruff>=0.14.2",
+    "factory-boy>=3.3.3",
     "freezegun>=1.5.5",
 ]
 
