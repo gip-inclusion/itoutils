@@ -31,6 +31,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "testproject.testapp.nexus.middleware.AutoLoginMiddleware",
 ]
 
 ROOT_URLCONF = "testproject.config.urls"
@@ -89,3 +90,7 @@ LOGGING = {
         "": {"handlers": ["console"], "level": "INFO"},
     },
 }
+
+
+NEXUS_AUTO_LOGIN_KEY = {"k": "aTR4ZnR1WlpYYmphbFdtaXVlVjB3alljNjhrWXpfYSE", "kty": "oct"}
+NEXUS_ALLOWED_REDIRECT_HOSTS = ["plateforme.inclusion.beta.gouv.fr", "plateforme.inclusion.gouv.fr"]
