@@ -89,3 +89,6 @@ LOGGING = {
         "": {"handlers": ["console"], "level": "INFO"},
     },
 }
+
+
+NEXUS_AUTO_LOGIN_KEY = {"k": "aTR4ZnR1WlpYYmphbFdtaXVlVjB3alljNjhrWXpfYSE", "kty": "oct"}
