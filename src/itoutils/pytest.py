@@ -19,3 +19,9 @@ def capture_stream_handler_log(request):
             yield captured
 
     return capture_stream_handler
+
+
+@pytest.fixture
+def mock_nexus_token():
+    with mock.patch("itoutils.django.nexus.views.generate_token", return_value="JWT") as mocked:
+        yield mocked
