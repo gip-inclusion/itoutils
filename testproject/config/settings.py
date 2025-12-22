@@ -3,6 +3,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+APPS_DIR = os.path.abspath(os.path.join(BASE_DIR, "testproject"))
 
 SECRET_KEY = "django-insecure-%am#r-wl5tx8vp6+l7o+6)3+1iipnex@otx_%dtov7gbnud5t0"
 
@@ -94,3 +95,5 @@ LOGGING = {
 
 NEXUS_AUTO_LOGIN_KEY = {"k": "aTR4ZnR1WlpYYmphbFdtaXVlVjB3alljNjhrWXpfYSE", "kty": "oct"}
 NEXUS_ALLOWED_REDIRECT_HOSTS = ["plateforme.inclusion.beta.gouv.fr", "plateforme.inclusion.gouv.fr"]
+
+ASSERT_SNAPSHOT_QUERIES_EXTRA_PACKAGES_ALLOWLIST = [("django/db/models/query.py", "count")]

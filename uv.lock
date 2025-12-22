@@ -230,6 +230,8 @@ dev = [
     { name = "pytest" },
     { name = "pytest-django" },
     { name = "ruff" },
+    { name = "sqlparse" },
+    { name = "syrupy" },
     { name = "time-machine" },
 ]
 
@@ -252,6 +254,8 @@ dev = [
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest-django", specifier = ">=4.11.1" },
     { name = "ruff", specifier = ">=0.14.2" },
+    { name = "sqlparse" },
+    { name = "syrupy" },
     { name = "time-machine" },
 ]
 
