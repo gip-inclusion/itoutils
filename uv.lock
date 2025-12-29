@@ -226,12 +226,10 @@ django-testing = [
 [package.dev-dependencies]
 dev = [
     { name = "factory-boy" },
-    { name = "itoutils", extra = ["django"] },
+    { name = "itoutils", extra = ["django", "django-testing"] },
     { name = "pytest" },
     { name = "pytest-django" },
     { name = "ruff" },
-    { name = "sqlparse" },
-    { name = "syrupy" },
     { name = "time-machine" },
 ]
 
@@ -250,12 +248,10 @@ provides-extras = ["django", "django-testing"]
 [package.metadata.requires-dev]
 dev = [
     { name = "factory-boy", specifier = ">=3.3.3" },
-    { name = "itoutils", extras = ["django"] },
+    { name = "itoutils", extras = ["django", "django-testing"] },
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest-django", specifier = ">=4.11.1" },
     { name = "ruff", specifier = ">=0.14.2" },
-    { name = "sqlparse" },
-    { name = "syrupy" },
     { name = "time-machine" },
 ]
 
