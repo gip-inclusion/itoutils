@@ -57,12 +57,10 @@ fallback_version = "0.0.0"
 [dependency-groups]
 dev = [
     "factory-boy>=3.3.3",
-    "itoutils[django]",
+    "itoutils[django,django-testing]",
     "pytest>=8.4.2",
     "pytest-django>=4.11.1",
     "ruff>=0.14.2",
-    "sqlparse",
-    "syrupy",
     "time-machine",
 ]
 
