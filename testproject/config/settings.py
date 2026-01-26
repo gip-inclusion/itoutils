@@ -93,7 +93,7 @@ LOGGING = {
 }
 
 
-NEXUS_AUTO_LOGIN_KEY = {"k": "aTR4ZnR1WlpYYmphbFdtaXVlVjB3alljNjhrWXpfYSE", "kty": "oct"}
+PDI_JWT_KEY = {"k": "aTR4ZnR1WlpYYmphbFdtaXVlVjB3alljNjhrWXpfYSE", "kty": "oct"}
 NEXUS_ALLOWED_REDIRECT_HOSTS = ["plateforme.inclusion.beta.gouv.fr", "plateforme.inclusion.gouv.fr"]
 
 ASSERT_SNAPSHOT_QUERIES_EXTRA_PACKAGES_ALLOWLIST = [("django/db/models/query.py", "count")]
