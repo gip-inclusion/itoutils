@@ -11,7 +11,7 @@ from itoutils.urls import add_url_params
 def auto_login(request):
     next_url = request.GET.get("next_url")
 
-    if next_url is None or settings.NEXUS_AUTO_LOGIN_KEY is None:
+    if next_url is None or settings.PDI_JWT_KEY is None:
         raise Http404
 
     if url_has_allowed_host_and_scheme(next_url, settings.NEXUS_ALLOWED_REDIRECT_HOSTS, require_https=True):

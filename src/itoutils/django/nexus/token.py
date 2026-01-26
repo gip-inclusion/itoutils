@@ -12,7 +12,7 @@ EXPIRY_DELAY = 60  # seconds
 
 # Use a function to easily override the setting in tests
 def _get_key():
-    return jwk.JWK(**settings.NEXUS_AUTO_LOGIN_KEY) if settings.NEXUS_AUTO_LOGIN_KEY else None
+    return jwk.JWK(**settings.PDI_JWT_KEY) if settings.PDI_JWT_KEY else None
 
 
 def generate_token(user):
