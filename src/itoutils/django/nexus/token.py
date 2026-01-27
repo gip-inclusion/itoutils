@@ -15,13 +15,15 @@ def _get_key():
     return jwk.JWK(**settings.PDI_JWT_KEY) if settings.PDI_JWT_KEY else None
 
 
-def generate_token(user):
-    token = jwt.JWT(
-        header={"alg": "A256KW", "enc": "A256CBC-HS512"},
-        claims={"email": user.email, "exp": round(time.time()) + EXPIRY_DELAY},
-    )
+def generate_token(claims):
+    claims.setdefault("exp", round(time.time()) + EXPIRY_DELAY)
+    token = jwt.JWT(header={"alg": "A256KW", "enc": "A256CBC-HS512"}, claims=claims)
     token.make_encrypted_token(_get_key())
     return token.serialize()
+
+
+def generate_auto_login_token(user):
+    return generate_token({"email": user.email})
 
 
 def decode_token(token):
