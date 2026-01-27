@@ -97,6 +97,13 @@ def normalized_frame_filename(frame_info, debug):
     frame_filename = frame_info.filename
     if frame_filename.startswith(settings.APPS_DIR):
         return os.path.relpath(frame_filename, settings.APPS_DIR)
+
+    import itoutils
+
+    itoutils_path = os.path.dirname(itoutils.__file__)
+    if frame_filename.startswith(itoutils_path):
+        return f"itoutils/{os.path.relpath(frame_filename, itoutils_path)}"
+
     if (
         (allowed_filepaths := OTHER_PACKAGES_ALLOWLIST.get(frame_info.function))
         and frame_filename.endswith(allowed_filepaths)
