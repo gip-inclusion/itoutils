@@ -18,4 +18,5 @@ class SyncedItemFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SyncedItem
 
+    user = factory.SubFactory(UserFactory)
     category = factory.Faker("word")

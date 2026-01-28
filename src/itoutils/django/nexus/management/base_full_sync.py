@@ -17,11 +17,9 @@ class BaseNexusFullSyncCommand(BaseCommand):
 
     def batched(self, queryset):
         # NB : the iterator allows to fetch data in smaller batches.
-        # With it or without, we still get all the objects that were present
-        # when evaluating the queryset (in itertools.batched).
-        # Any change occuring after that (new, updated or deleted line)
-        # won't affect the batches.
-        return batched(queryset.iterator(chunk_size=self.CHUNK_SIZE), self.CHUNK_SIZE)
+        # Thanks to server-side cursors, any change occuring after the first
+        # query won't affect the batches.
+        return batched(queryset.iterator(), self.CHUNK_SIZE)
 
     def get_structures_queryset(self):
         raise NotImplementedError
