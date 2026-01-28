@@ -73,7 +73,7 @@ def assertSnapshotQueries(snapshot, func=None, *args, using=DEFAULT_DB_ALIAS, **
 
 
 # List of functions that help identify the query origin
-_other_packeges_allowlist = [
+_other_packages_allowlist = [
     ("django/core/paginator.py", "count"),
     ("django/contrib/admin/options.py", "get_object"),
     ("django/contrib/sessions/backends/db.py", "_get_session_from_db"),
@@ -87,7 +87,7 @@ _other_packeges_allowlist = [
 ] + settings.ASSERT_SNAPSHOT_QUERIES_EXTRA_PACKAGES_ALLOWLIST
 
 OTHER_PACKAGES_ALLOWLIST = defaultdict(list)
-for path, function in _other_packeges_allowlist:
+for path, function in _other_packages_allowlist:
     OTHER_PACKAGES_ALLOWLIST[function].append(path)
 OTHER_PACKAGES_ALLOWLIST = {function: tuple(paths) for function, paths in OTHER_PACKAGES_ALLOWLIST.items()}
 
