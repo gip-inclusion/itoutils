@@ -43,3 +43,8 @@ def mock_nexus_api(respx_mock, settings):
     respx_mock.delete(f"{settings.NEXUS_API_BASE_URL}memberships").respond(200)
     respx_mock.post(f"{settings.NEXUS_API_BASE_URL}sync-completed").respond(200)
     return respx_mock
+
+
+@pytest.fixture
+def nexus_sync(transactional_db, django_capture_on_commit_callbacks):
+    pass
