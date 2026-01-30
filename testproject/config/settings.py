@@ -98,5 +98,5 @@ NEXUS_ALLOWED_REDIRECT_HOSTS = ["plateforme.inclusion.beta.gouv.fr", "plateforme
 
 ASSERT_SNAPSHOT_QUERIES_EXTRA_PACKAGES_ALLOWLIST = [("django/db/models/query.py", "count")]
 
-NEXUS_API_BASE_URL = ""
-NEXUS_API_TOKEN = ""
+NEXUS_API_BASE_URL = None
+NEXUS_API_TOKEN = None
