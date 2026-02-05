@@ -127,9 +127,13 @@ class TestSync:
         synced_item_2 = SyncedItemFactory.build(user=user)
 
         with pytest.raises(NotImplementedError):
-            SyncedItem.objects.bulk_create([synced_item_1, synced_item_2])
+            SyncedItem.objects.bulk_create([synced_item_1, synced_item_2], ignore_conflicts=True)
+        assert SyncedItem.objects.count() == 0
+
+        with pytest.raises(NotImplementedError):
+            SyncedItem.objects.bulk_create([synced_item_1, synced_item_2], update_conflicts=True)
         assert SyncedItem.objects.count() == 0
 
         with django_capture_on_commit_callbacks(execute=True):
-            SyncedItem.objects.bulk_create([synced_item_1, synced_item_2], skip_nexus_sync=True)
-        self.assert_mocked_calls(None)
+            SyncedItem.objects.bulk_create([synced_item_1, synced_item_2])
+        self.assert_mocked_calls(sync=True, args=[synced_item_1, synced_item_2])
