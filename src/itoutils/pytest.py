@@ -2,8 +2,10 @@ import contextlib
 import io
 import logging
 from unittest import mock
+from urllib.parse import urljoin
 
 import pytest
+from django.conf import settings as django_settings
 from django.utils import timezone
 
 
@@ -28,18 +30,20 @@ def mock_nexus_token():
         yield mocked
 
 
+def nexus_url(endpoint):
+    return urljoin(django_settings.NEXUS_API_BASE_URL, endpoint)
+
+
 @pytest.fixture
 def mock_nexus_api(respx_mock, settings):
     settings.NEXUS_API_BASE_URL = "http://nexus/api/"
     settings.NEXUS_API_TOKEN = "very-secret-token"
-    respx_mock.post(f"{settings.NEXUS_API_BASE_URL}sync-start").respond(
-        200, json={"started_at": timezone.now().isoformat()}
-    )
-    respx_mock.post(f"{settings.NEXUS_API_BASE_URL}users").respond(200)
-    respx_mock.delete(f"{settings.NEXUS_API_BASE_URL}users").respond(200)
-    respx_mock.post(f"{settings.NEXUS_API_BASE_URL}structures").respond(200)
-    respx_mock.delete(f"{settings.NEXUS_API_BASE_URL}structures").respond(200)
-    respx_mock.post(f"{settings.NEXUS_API_BASE_URL}memberships").respond(200)
-    respx_mock.delete(f"{settings.NEXUS_API_BASE_URL}memberships").respond(200)
-    respx_mock.post(f"{settings.NEXUS_API_BASE_URL}sync-completed").respond(200)
+    respx_mock.post(nexus_url("sync-start")).respond(200, json={"started_at": timezone.now().isoformat()})
+    respx_mock.post(nexus_url("users")).respond(200)
+    respx_mock.delete(nexus_url("users")).respond(200)
+    respx_mock.post(nexus_url("structures")).respond(200)
+    respx_mock.delete(nexus_url("structures")).respond(200)
+    respx_mock.post(nexus_url("memberships")).respond(200)
+    respx_mock.delete(nexus_url("memberships")).respond(200)
+    respx_mock.post(nexus_url("sync-completed")).respond(200)
     return respx_mock
