@@ -48,11 +48,19 @@ class NexusQuerySetMixin:
 
     # bulk_update calls update so it's correctly handled (see the tests)
 
-    def bulk_create(self, objs, *args, skip_nexus_sync=False, **kwargs):
-        if skip_nexus_sync:
+    def bulk_create(
+        self,
+        objs,
+        *args,
+        ignore_conflicts=False,
+        update_conflicts=False,
+        **kwargs,
+    ):
+        if ignore_conflicts is False and update_conflicts is False:
             # We don't want to handle this method if conflicts are ignored or updated
-            # Only allow to call this if the caller knows he needs to sync the objects himself
-            return super().bulk_create(objs, *args, **kwargs)
+            created_objs = super().bulk_create(objs, *args, **kwargs)
+            transaction.on_commit(partial(self.model.nexus_sync, created_objs))
+            return created_objs
         raise NotImplementedError
 
 
