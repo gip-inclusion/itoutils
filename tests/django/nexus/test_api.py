@@ -1,8 +1,10 @@
 import json
 
+import httpx
 import pytest
 
-from itoutils.django.nexus.api import NexusAPIClient
+from itoutils.django.nexus.api import NexusAPIClient, NexusAPIException
+from itoutils.pytest import nexus_url
 
 
 class TestClient:
@@ -70,3 +72,46 @@ class TestClient:
         assert call.request.method == "DELETE"
         assert call.request.url == "http://nexus/api/memberships"
         assert json.loads(call.request.content.decode()) == self.dummy_pks_payload
+
+    def test_200_with_errors(self, mock_nexus_api, caplog):
+        mock_nexus_api.post(nexus_url("structures")).respond(
+            200, json={"errors": {"my-id": {"post_code": ["Ce champ ne peut être vide."]}}}
+        )
+        self.client.send_structures(self.dummy_send_payload)
+        assert caplog.messages == [
+            'HTTP Request: POST http://nexus/api/structures "HTTP/1.1 200 OK"',
+            "nexus POST:structures error={'my-id': {'post_code': ['Ce champ ne peut être vide.']}}",
+        ]
+
+    def test_400(self, mock_nexus_api, caplog):
+        mock_nexus_api.post(nexus_url("sync-completed")).respond(
+            400, json={"errors": {"started_at": ["Ce champ est obligatoire."]}}
+        )
+        with pytest.raises(NexusAPIException):
+            self.client.complete_full_sync("bad start_at")
+        assert caplog.messages == [
+            'HTTP Request: POST http://nexus/api/sync-completed "HTTP/1.1 400 Bad Request"',
+            "nexus POST:sync-completed error={'errors': {'started_at': ['Ce champ est obligatoire.']}}",
+        ]
+
+    def test_503(self, mock_nexus_api, caplog):
+        mock_nexus_api.post(nexus_url("sync-completed")).respond(503)
+        with pytest.raises(NexusAPIException):
+            self.client.complete_full_sync("bad start_at")
+        assert caplog.messages == [
+            'HTTP Request: POST http://nexus/api/sync-completed "HTTP/1.1 503 Service Unavailable"',
+            "nexus POST:sync-completed error=Server error '503 Service Unavailable' "
+            "for url 'http://nexus/api/sync-completed'\n"
+            "For more information check: "
+            "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+        ]
+
+    def test_connexion_refused(self, mock_nexus_api, caplog):
+        mock_nexus_api.post(nexus_url("structures")).mock(
+            side_effect=httpx.ConnectError(message="[Errno 111] Connection refused")
+        )
+        with pytest.raises(NexusAPIException):
+            self.client.send_structures(self.dummy_send_payload)
+        assert caplog.messages == [
+            "nexus POST:structures error=[Errno 111] Connection refused",
+        ]

@@ -39,11 +39,11 @@ def mock_nexus_api(respx_mock, settings):
     settings.NEXUS_API_BASE_URL = "http://nexus/api/"
     settings.NEXUS_API_TOKEN = "very-secret-token"
     respx_mock.post(nexus_url("sync-start")).respond(200, json={"started_at": timezone.now().isoformat()})
-    respx_mock.post(nexus_url("users")).respond(200)
-    respx_mock.delete(nexus_url("users")).respond(200)
-    respx_mock.post(nexus_url("structures")).respond(200)
-    respx_mock.delete(nexus_url("structures")).respond(200)
-    respx_mock.post(nexus_url("memberships")).respond(200)
-    respx_mock.delete(nexus_url("memberships")).respond(200)
-    respx_mock.post(nexus_url("sync-completed")).respond(200)
+    respx_mock.post(nexus_url("users")).respond(200, json={})
+    respx_mock.delete(nexus_url("users")).respond(200, json={})
+    respx_mock.post(nexus_url("structures")).respond(200, json={})
+    respx_mock.delete(nexus_url("structures")).respond(200, json={})
+    respx_mock.post(nexus_url("memberships")).respond(200, json={})
+    respx_mock.delete(nexus_url("memberships")).respond(200, json={})
+    respx_mock.post(nexus_url("sync-completed")).respond(200, json={})
     return respx_mock
