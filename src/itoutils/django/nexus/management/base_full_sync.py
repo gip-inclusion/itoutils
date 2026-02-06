@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseNexusFullSyncCommand(BaseCommand):
-    CHUNK_SIZE = 10_000
+    CHUNK_SIZE = 5_000
     structure_serializer = None
     user_serializer = None
     membership_serializer = None
