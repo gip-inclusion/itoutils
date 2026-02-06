@@ -19,10 +19,17 @@ class NexusAPIClient:
 
     def call(self, method, url, **kwargs):
         try:
-            return self.client.request(method, url, **kwargs).raise_for_status()
+            response = self.client.request(method, url, **kwargs).raise_for_status()
         except httpx.HTTPError as exc:
-            logger.exception(f"nexus {method}:{url} error=%s", exc)
+            try:
+                error = exc.response.json()
+                logger.exception(f"nexus {method}:{url} error=%s", error)
+            except Exception:
+                logger.exception(f"nexus {method}:{url} error=%s", exc)
             raise NexusAPIException from exc
+        if errors := response.json().get("errors"):
+            logger.error(f"nexus {method}:{url} error=%s", errors)
+        return response
 
     def init_full_sync(self):
         return self.call("POST", "sync-start").json()["started_at"]
