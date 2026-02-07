@@ -73,6 +73,13 @@ class TestClient:
         assert call.request.url == "http://nexus/api/memberships"
         assert json.loads(call.request.content.decode()) == self.dummy_pks_payload
 
+    def test_dropdown_status(self, mock_nexus_api):
+        self.client.dropdown_status("email@mailinator.com")
+        [call] = mock_nexus_api.calls
+        assert call.request.method == "POST"
+        assert call.request.url == "http://nexus/api/dropdown-status"
+        assert json.loads(call.request.content.decode()) == {"email": "email@mailinator.com"}
+
     def test_200_with_errors(self, mock_nexus_api, caplog):
         mock_nexus_api.post(nexus_url("structures")).respond(
             200, json={"errors": {"my-id": {"post_code": ["Ce champ ne peut être vide."]}}}
