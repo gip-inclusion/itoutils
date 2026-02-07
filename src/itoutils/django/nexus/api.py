@@ -54,3 +54,6 @@ class NexusAPIClient:
 
     def delete_memberships(self, membership_pks):
         self.call("DELETE", "memberships", json=[{"id": str(membership_pk)} for membership_pk in membership_pks])
+
+    def dropdown_status(self, email):
+        return self.call("POST", "dropdown-status", json={"email": email}).json()

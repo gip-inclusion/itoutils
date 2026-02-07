@@ -46,4 +46,5 @@ def mock_nexus_api(respx_mock, settings):
     respx_mock.post(nexus_url("memberships")).respond(200, json={})
     respx_mock.delete(nexus_url("memberships")).respond(200, json={})
     respx_mock.post(nexus_url("sync-completed")).respond(200, json={})
+    respx_mock.post(nexus_url("dropdown-status")).respond(200, json={})
     return respx_mock
