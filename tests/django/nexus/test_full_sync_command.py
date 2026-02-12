@@ -2,6 +2,7 @@ import json
 
 from django.core.management import call_command
 
+from itoutils.django.nexus.api import NexusAPIClient
 from testproject.testapp.models import Item
 
 
@@ -37,3 +38,10 @@ def test_full_sync(db, mock_nexus_api):
     assert call_completed.request.method == "POST"
     assert call_completed.request.url == "http://nexus/api/sync-completed"
     assert json.loads(call_completed.request.content.decode()) == {"started_at": started_at}
+
+
+def test_full_sync_disabled(db, caplog, mocker):
+    mocked = mocker.patch.object(NexusAPIClient, "call")
+    call_command("nexus_full_sync")
+    assert caplog.messages == ["Nexus full sync is disabled"]
+    assert mocked.call_count == 0

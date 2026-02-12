@@ -54,6 +54,7 @@ class BaseNexusFullSyncCommand(BaseCommand):
     def handle(self, *args, no_checks=False, **kwargs):
         if not settings.NEXUS_API_BASE_URL:
             logger.warning("Nexus full sync is disabled")
+            return
         self.client = NexusAPIClient()
         start_at = self.client.init_full_sync()
         self.sync_structures()
