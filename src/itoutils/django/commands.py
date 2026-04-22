@@ -89,20 +89,21 @@ def dry_runnable(func):
         wet_run = kwargs.get("wet_run")
         if wet_run is None:
             raise RuntimeError('No "wet_run" argument was given')
+        if not connection.in_atomic_block:
+            raise RuntimeError('Using "dry_runnable" decorator outside a transaction')
 
         logger = (
             args[0].logger
             if args and args[0] and isinstance(args[0], LoggedCommandMixin)
             else logging.getLogger(func.__module__)
         )
-        with transaction.atomic():
-            if not wet_run:
-                logger.info("Command launched with wet_run=%s", wet_run)
-            func(*args, **kwargs)
-            if not wet_run:
-                with connection.cursor() as cursor:
-                    cursor.execute("SET CONSTRAINTS ALL IMMEDIATE;")
-                transaction.set_rollback(True)
-                logger.info("Setting transaction to be rollback as wet_run=%s", wet_run)
+        if not wet_run:
+            logger.info("Command launched with wet_run=%s", wet_run)
+        func(*args, **kwargs)
+        if not wet_run:
+            with connection.cursor() as cursor:
+                cursor.execute("SET CONSTRAINTS ALL IMMEDIATE;")
+            transaction.set_rollback(True)
+            logger.info("Setting transaction to be rollback as wet_run=%s", wet_run)
 
     return wrapper

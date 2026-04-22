@@ -83,3 +83,11 @@ def test_dry_runnable_check_constraints(item):
         match='violates foreign key constraint "testapp_item_parent_id_.*_fk_testapp_item_id"',
     ):
         command(wet_run=False)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_broken_dry_runnable_command():
+    with pytest.raises(RuntimeError, match='Using "dry_runnable" decorator outside a transaction'):
+        management.call_command("broken_dry_runnable_command")
+    with pytest.raises(RuntimeError, match='Using "dry_runnable" decorator outside a transaction'):
+        management.call_command("broken_dry_runnable_command", "--wet-run")
