@@ -1,10 +1,10 @@
 from django.core.management import BaseCommand
 
-from itoutils.django.commands import LoggedCommandMixin, dry_runnable
+from itoutils.django.commands import AtomicHandleMixin, LoggedCommandMixin, dry_runnable
 from testproject.testapp.models import Item
 
 
-class Command(LoggedCommandMixin, BaseCommand):
+class Command(LoggedCommandMixin, AtomicHandleMixin, BaseCommand):
     ATOMIC_HANDLE = True
 
     def add_arguments(self, parser):
