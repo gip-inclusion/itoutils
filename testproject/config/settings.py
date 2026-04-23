@@ -15,11 +15,14 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.gis",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.postgres",
     "django.contrib.staticfiles",
     # First party
     "itoutils.django",
+    "itoutils.django.decoupage_administratif",
     # First party's tests
     "testproject.testapp",
 ]
@@ -58,7 +61,7 @@ TEMPLATES = [
 DATABASES = {
     "default": {
         "ATOMIC_REQUESTS": True,
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": os.getenv("PGDATABASE", "itoutils"),
         "HOST": os.getenv("PGHOST", "127.0.0.1"),
         "PORT": os.getenv("PGPORT", "5432"),
@@ -100,3 +103,6 @@ ASSERT_SNAPSHOT_QUERIES_EXTRA_PACKAGES_ALLOWLIST = [("django/db/models/query.py"
 
 NEXUS_API_BASE_URL = None
 NEXUS_API_TOKEN = None
+
+GEO_API_GOUV_BASE_URL = os.getenv("GEO_API_GOUV_BASE_URL", "https://geo.api.gouv.fr")
+GEO_API_GOUV_TIMEOUT_SECONDS = int(os.getenv("GEO_API_GOUV_TIMEOUT_SECONDS", "10"))
