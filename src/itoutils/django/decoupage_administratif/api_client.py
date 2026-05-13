@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-import requests
+import httpx
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -15,16 +15,16 @@ class DecoupageAdministratifAPIClient:
         *,
         base_url: str | None = None,
         timeout_seconds: int | None = None,
-        session: requests.Session | None = None,
+        client: httpx.Client | None = None,
     ) -> None:
         self.base_url = (base_url or settings.GEO_API_GOUV_BASE_URL).rstrip("/")
         self.timeout_seconds = timeout_seconds or settings.GEO_API_GOUV_TIMEOUT_SECONDS
-        self.session = session or requests.Session()
+        self.client = client or httpx.Client()
 
     def _get(self, path: str, params: dict[str, Any] | None = None) -> Any:
         url = f"{self.base_url}{path}"
         logger.info("Fetching %s", url)
-        response = self.session.get(url, params=params, timeout=self.timeout_seconds)
+        response = self.client.get(url, params=params, timeout=self.timeout_seconds)
         response.raise_for_status()
         return response.json()
 
