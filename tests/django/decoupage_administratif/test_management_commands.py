@@ -1,103 +1,78 @@
 import io
-from unittest import mock
 
+import pytest
 from django.core.management import call_command
-from django.test import TestCase
 
 from itoutils.django.decoupage_administratif.management.commands.import_decoupage_administratif import (
     OVERSEAS_DEPARTMENTS,
 )
 from itoutils.django.decoupage_administratif.models import Department
 
+IMPORTER_PATH = (
+    "itoutils.django.decoupage_administratif.management.commands"
+    ".import_decoupage_administratif.DecoupageAdministratifImporter"
+)
 
-class ImportDecoupageAdministratifCommandTests(TestCase):
-    @mock.patch(
-        "itoutils.django.decoupage_administratif.management.commands.import_decoupage_administratif.DecoupageAdministratifImporter"
-    )
-    def test_command_runs_full_import_by_default(self, importer_cls):
-        importer_instance = importer_cls.return_value
+SCOPES_AND_METHODS = [
+    ("regions", "import_regions"),
+    ("departements", "import_departements"),
+    ("epci", "import_epci"),
+    ("communes", "import_communes"),
+    ("all", "import_all"),
+]
 
-        call_command("import_decoupage_administratif")
 
-        importer_instance.import_all.assert_called_once_with()
+def test_command_runs_full_import_by_default(db, mocker):
+    importer_cls = mocker.patch(IMPORTER_PATH)
 
-    @mock.patch(
-        "itoutils.django.decoupage_administratif.management.commands.import_decoupage_administratif.DecoupageAdministratifImporter"
-    )
-    def test_command_supports_scope_argument(self, importer_cls):
-        scopes_methods = {
-            "regions": "import_regions",
-            "departements": "import_departements",
-            "epci": "import_epci",
-            "communes": "import_communes",
-            "all": "import_all",
-        }
+    call_command("import_decoupage_administratif")
 
-        for scope, method_name in scopes_methods.items():
-            importer_instance = mock.Mock()
-            importer_cls.return_value = importer_instance
+    importer_cls.return_value.import_all.assert_called_once_with()
 
-            call_command("import_decoupage_administratif", scope=scope)
 
-            getattr(importer_instance, method_name).assert_called_once_with()
-            for other_method_name in scopes_methods.values():
-                if other_method_name != method_name:
-                    getattr(importer_instance, other_method_name).assert_not_called()
+@pytest.mark.parametrize("scope,method_name", SCOPES_AND_METHODS)
+def test_command_supports_scope_argument(db, mocker, scope, method_name):
+    importer_cls = mocker.patch(IMPORTER_PATH)
+    importer_instance = importer_cls.return_value
 
-    @mock.patch(
-        "itoutils.django.decoupage_administratif.management.commands.import_decoupage_administratif.DecoupageAdministratifImporter"
-    )
-    def test_command_calls_requested_scope_for_each_entity(self, importer_cls):
-        importer_instance = importer_cls.return_value
-        scopes_methods = {
-            "communes": importer_instance.import_communes,
-            "departements": importer_instance.import_departements,
-            "epci": importer_instance.import_epci,
-            "regions": importer_instance.import_regions,
-            "all": importer_instance.import_all,
-        }
+    call_command("import_decoupage_administratif", scope=scope)
 
-        for scope, method in scopes_methods.items():
-            importer_instance.reset_mock()
-            call_command("import_decoupage_administratif", scope=scope)
-            method.assert_called_once_with()
+    getattr(importer_instance, method_name).assert_called_once_with()
+    for other_method_name in dict(SCOPES_AND_METHODS).values():
+        if other_method_name != method_name:
+            getattr(importer_instance, other_method_name).assert_not_called()
 
-    @mock.patch(
-        "itoutils.django.decoupage_administratif.management.commands.import_decoupage_administratif.DecoupageAdministratifImporter"
-    )
-    def test_command_prints_progress_messages(self, importer_cls):
-        out = io.StringIO()
-        call_command("import_decoupage_administratif", stdout=out)
 
-        output = out.getvalue()
-        self.assertIn("Starting import 'all'...", output)
-        self.assertIn("Import completed.", output)
+def test_command_prints_progress_messages(db, mocker):
+    mocker.patch(IMPORTER_PATH)
+    out = io.StringIO()
 
-    @mock.patch(
-        "itoutils.django.decoupage_administratif.management.commands.import_decoupage_administratif.DecoupageAdministratifImporter"
-    )
-    def test_command_creates_overseas_departments_only_for_all_or_departements(self, importer_cls):
-        importer_cls.return_value = mock.Mock()
+    call_command("import_decoupage_administratif", stdout=out)
 
-        expected_count_by_scope = {
-            "regions": 0,
-            "epci": 0,
-            "communes": 0,
-            "departements": len(OVERSEAS_DEPARTMENTS),
-            "all": len(OVERSEAS_DEPARTMENTS),
-        }
+    output = out.getvalue()
+    assert "Starting import 'all'..." in output
+    assert "Import completed." in output
 
-        for scope, expected_count in expected_count_by_scope.items():
-            Department.objects.all().delete()
-            call_command("import_decoupage_administratif", scope=scope, wet_run=True)
-            self.assertEqual(Department.objects.count(), expected_count)
 
-            if expected_count:
-                for overseas_department in OVERSEAS_DEPARTMENTS:
-                    department = Department.objects.get(code=overseas_department["code"])
-                    self.assertEqual(department.name, overseas_department["name"])
-                    self.assertEqual(
-                        department.normalized_name,
-                        overseas_department["normalized_name"],
-                    )
-                    self.assertEqual(department.region, overseas_department["code"])
+@pytest.mark.parametrize(
+    "scope,expected_count",
+    [
+        ("regions", 0),
+        ("epci", 0),
+        ("communes", 0),
+        ("departements", len(OVERSEAS_DEPARTMENTS)),
+        ("all", len(OVERSEAS_DEPARTMENTS)),
+    ],
+)
+def test_command_creates_overseas_departments_only_for_all_or_departements(db, mocker, scope, expected_count):
+    mocker.patch(IMPORTER_PATH)
+
+    call_command("import_decoupage_administratif", scope=scope, wet_run=True)
+
+    assert Department.objects.count() == expected_count
+    if expected_count:
+        for overseas_department in OVERSEAS_DEPARTMENTS:
+            department = Department.objects.get(code=overseas_department["code"])
+            assert department.name == overseas_department["name"]
+            assert department.normalized_name == overseas_department["normalized_name"]
+            assert department.region == overseas_department["code"]
