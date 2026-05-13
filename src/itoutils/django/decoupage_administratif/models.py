@@ -79,7 +79,7 @@ class City(AdminDivision):
         blank=True,
         default=list,
     )
-    population = models.IntegerField(default=0)
+    population = models.IntegerField(null=True, blank=True, default=None)
     center = gis_models.PointField(srid=WGS84, geography=True)
     objects = CityManager()
 
