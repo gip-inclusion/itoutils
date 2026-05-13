@@ -63,8 +63,8 @@ class DecoupageAdministratifImporter:
                 code=epci["code"],
                 defaults={
                     "name": name,
-                    "departments": epci.get("codesDepartements", []),
-                    "regions": epci.get("codesRegions", []),
+                    "departments": sorted(epci.get("codesDepartements", [])),
+                    "regions": sorted(epci.get("codesRegions", [])),
                     "normalized_name": normalize_string_for_search(name),
                 },
             )
@@ -85,7 +85,7 @@ class DecoupageAdministratifImporter:
                     "department": commune.get("codeDepartement", ""),
                     "epci": commune.get("codeEpci", ""),
                     "region": commune.get("codeRegion", ""),
-                    "postal_codes": commune.get("codesPostaux", []),
+                    "postal_codes": sorted(commune.get("codesPostaux", [])),
                     "population": commune.get("population", 0),
                     "center": _parse_center(commune.get("centre")),
                     "normalized_name": normalized_name,
