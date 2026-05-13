@@ -71,7 +71,7 @@ class DecoupageAdministratifImporterTests(TestCase):
         self.assertEqual(city.epci, "")
         self.assertEqual(city.region, "")
         self.assertEqual(city.postal_codes, ["75001"])
-        self.assertEqual(city.population, 0)
+        self.assertIsNone(city.population)
         self.assertIsNotNone(city.center)
         self.assertAlmostEqual(city.center.x, 2.347, places=3)
         self.assertAlmostEqual(city.center.y, 48.8589, places=3)

@@ -86,7 +86,7 @@ class DecoupageAdministratifImporter:
                     "epci": commune.get("codeEpci", ""),
                     "region": commune.get("codeRegion", ""),
                     "postal_codes": sorted(commune.get("codesPostaux", [])),
-                    "population": commune.get("population", 0),
+                    "population": commune.get("population"),
                     "center": _parse_center(commune.get("centre")),
                     "normalized_name": normalized_name,
                 },
