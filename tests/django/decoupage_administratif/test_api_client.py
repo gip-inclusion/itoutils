@@ -1,73 +1,82 @@
 from unittest import mock
 
+import pytest
 import requests
-from django.test import TestCase
 
 from itoutils.django.decoupage_administratif.api_client import DecoupageAdministratifAPIClient
 
 
-class DecoupageAdministratifAPIClientTests(TestCase):
-    def setUp(self):
-        self.session = mock.Mock()
-        self.response = mock.Mock()
-        self.response.json.return_value = [{"code": "dummy"}]
-        self.response.raise_for_status.return_value = None
-        self.session.get.return_value = self.response
-        self.client = DecoupageAdministratifAPIClient(
-            base_url="https://example.com",
-            timeout_seconds=5,
-            session=self.session,
-        )
+@pytest.fixture
+def session():
+    s = mock.Mock()
+    response = mock.Mock()
+    response.json.return_value = [{"code": "dummy"}]
+    response.raise_for_status.return_value = None
+    s.get.return_value = response
+    return s
 
-    def test_fetch_communes_calls_expected_endpoint(self):
-        data = self.client.fetch_communes()
 
-        self.assertEqual(data, self.response.json.return_value)
-        self.session.get.assert_called_once_with(
-            "https://example.com/communes",
-            params={
-                "fields": "code,nom,codeDepartement,codeRegion,codesPostaux,codeEpci,population,centre",
-                "format": "json",
-            },
-            timeout=5,
-        )
+@pytest.fixture
+def api_client(session):
+    return DecoupageAdministratifAPIClient(
+        base_url="https://example.com",
+        timeout_seconds=5,
+        session=session,
+    )
 
-    def test_fetch_departements_calls_expected_endpoint(self):
-        data = self.client.fetch_departements()
 
-        self.assertEqual(data, self.response.json.return_value)
-        self.session.get.assert_called_once_with(
-            "https://example.com/departements",
-            params={"fields": "code,nom,codeRegion", "format": "json"},
-            timeout=5,
-        )
+def test_fetch_communes_calls_expected_endpoint(session, api_client):
+    data = api_client.fetch_communes()
 
-    def test_fetch_epci_calls_expected_endpoint(self):
-        data = self.client.fetch_epci()
+    assert data == session.get.return_value.json.return_value
+    session.get.assert_called_once_with(
+        "https://example.com/communes",
+        params={
+            "fields": "code,nom,codeDepartement,codeRegion,codesPostaux,codeEpci,population,centre",
+            "format": "json",
+        },
+        timeout=5,
+    )
 
-        self.assertEqual(data, self.response.json.return_value)
-        self.session.get.assert_called_once_with(
-            "https://example.com/epcis",
-            params={
-                "fields": "code,nom,codesDepartements,codesRegions",
-                "format": "json",
-            },
-            timeout=5,
-        )
 
-    def test_fetch_regions_calls_expected_endpoint(self):
-        data = self.client.fetch_regions()
+def test_fetch_departements_calls_expected_endpoint(session, api_client):
+    data = api_client.fetch_departements()
 
-        self.assertEqual(data, self.response.json.return_value)
-        self.session.get.assert_called_once_with(
-            "https://example.com/regions",
-            params={"fields": "code,nom", "format": "json"},
-            timeout=5,
-        )
+    assert data == session.get.return_value.json.return_value
+    session.get.assert_called_once_with(
+        "https://example.com/departements",
+        params={"fields": "code,nom,codeRegion", "format": "json"},
+        timeout=5,
+    )
 
-    def test_fetch_communes_propagates_http_errors(self):
-        http_error = requests.HTTPError("boom")
-        self.response.raise_for_status.side_effect = http_error
 
-        with self.assertRaises(requests.HTTPError):
-            self.client.fetch_communes()
+def test_fetch_epci_calls_expected_endpoint(session, api_client):
+    data = api_client.fetch_epci()
+
+    assert data == session.get.return_value.json.return_value
+    session.get.assert_called_once_with(
+        "https://example.com/epcis",
+        params={
+            "fields": "code,nom,codesDepartements,codesRegions",
+            "format": "json",
+        },
+        timeout=5,
+    )
+
+
+def test_fetch_regions_calls_expected_endpoint(session, api_client):
+    data = api_client.fetch_regions()
+
+    assert data == session.get.return_value.json.return_value
+    session.get.assert_called_once_with(
+        "https://example.com/regions",
+        params={"fields": "code,nom", "format": "json"},
+        timeout=5,
+    )
+
+
+def test_fetch_communes_propagates_http_errors(session, api_client):
+    session.get.return_value.raise_for_status.side_effect = requests.HTTPError("boom")
+
+    with pytest.raises(requests.HTTPError):
+        api_client.fetch_communes()
