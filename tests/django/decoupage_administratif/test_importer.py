@@ -19,9 +19,6 @@ def importer(client):
     return DecoupageAdministratifImporter(client=client)
 
 
-# ── import_regions ────────────────────────────────────────────────────────────
-
-
 def test_import_regions_updates_names(db, client, importer):
     Region.objects.create(code="44", name="Old Name")
     client.fetch_regions.return_value = [
@@ -46,9 +43,6 @@ def test_import_regions_sets_normalized_name(db, client, importer):
     assert Region.objects.get(code="44").normalized_name == "GRAND EST"
 
 
-# ── import_departements ───────────────────────────────────────────────────────
-
-
 def test_import_departements_sets_region_codes(db, client, importer):
     Region.objects.create(code="11", name="Île-de-France")
     client.fetch_departements.return_value = [
@@ -70,9 +64,6 @@ def test_import_departements_sets_normalized_name(db, client, importer):
     importer.import_departements()
 
     assert Department.objects.get(code="75").normalized_name == "PARIS"
-
-
-# ── import_epci ───────────────────────────────────────────────────────────────
 
 
 def test_import_epci_defaults_empty_lists(db, client, importer):
@@ -104,9 +95,6 @@ def test_import_epci_sets_normalized_name(db, client, importer):
     importer.import_epci()
 
     assert EPCI.objects.get(code="200054781").normalized_name == "METROPOLE DU GRAND PARIS"
-
-
-# ── import_communes ───────────────────────────────────────────────────────────
 
 
 def test_import_communes_handles_missing_values(db, client, importer):
@@ -174,7 +162,50 @@ def test_import_communes_sets_normalized_name_with_department(db, client, import
     assert "75" in city.normalized_name
 
 
-# ── import_all ────────────────────────────────────────────────────────────────
+def test_import_arrondissements_creates_city(db, client, importer):
+    client.fetch_arrondissements.return_value = [
+        {
+            "code": "75101",
+            "nom": "Paris 1er Arrondissement",
+            "codeDepartement": "75",
+            "codeRegion": "11",
+            "codesPostaux": ["75001"],
+            "population": 15114,
+            "centre": {"type": "Point", "coordinates": [2.347, 48.8589]},
+        }
+    ]
+
+    importer.import_arrondissements()
+
+    city = City.objects.get(code="75101")
+    assert city.name == "Paris 1er Arrondissement"
+    assert city.department == "75"
+    assert city.region == "11"
+    assert city.epci == ""
+    assert city.postal_codes == ["75001"]
+    assert city.population == 15114
+    assert city.center is not None
+    assert city.center.x == pytest.approx(2.347, abs=1e-3)
+    assert city.center.y == pytest.approx(48.8589, abs=1e-3)
+
+
+def test_import_arrondissements_sets_normalized_name_with_department(db, client, importer):
+    client.fetch_arrondissements.return_value = [
+        {
+            "code": "13201",
+            "nom": "Marseille 1er Arrondissement",
+            "codeDepartement": "13",
+            "codeRegion": "93",
+            "codesPostaux": ["13001"],
+            "centre": {"type": "Point", "coordinates": [5.3698, 43.2965]},
+        }
+    ]
+
+    importer.import_arrondissements()
+
+    city = City.objects.get(code="13201")
+    assert "MARSEILLE 1ER ARRONDISSEMENT" in city.normalized_name
+    assert "13" in city.normalized_name
 
 
 def test_import_all_runs_every_step(importer):
@@ -183,6 +214,7 @@ def test_import_all_runs_every_step(importer):
         mock.patch.object(importer, "import_departements") as import_departements,
         mock.patch.object(importer, "import_epci") as import_epci,
         mock.patch.object(importer, "import_communes") as import_communes,
+        mock.patch.object(importer, "import_arrondissements") as import_arrondissements,
     ):
         importer.import_all()
 
@@ -190,9 +222,7 @@ def test_import_all_runs_every_step(importer):
     import_departements.assert_called_once_with()
     import_epci.assert_called_once_with()
     import_communes.assert_called_once_with()
-
-
-# ── _parse_center ─────────────────────────────────────────────────────────────
+    import_arrondissements.assert_called_once_with()
 
 
 def test_parse_center_with_valid_point():

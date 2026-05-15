@@ -18,6 +18,7 @@ SCOPES_AND_METHODS = [
     ("departements", "import_departements"),
     ("epci", "import_epci"),
     ("communes", "import_communes"),
+    ("arrondissements", "import_arrondissements"),
     ("all", "import_all"),
 ]
 
@@ -60,6 +61,7 @@ def test_command_prints_progress_messages(db, mocker):
         ("regions", 0),
         ("epci", 0),
         ("communes", 0),
+        ("arrondissements", 0),
         ("departements", len(OVERSEAS_DEPARTMENTS)),
         ("all", len(OVERSEAS_DEPARTMENTS)),
     ],

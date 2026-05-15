@@ -51,13 +51,13 @@ OVERSEAS_DEPARTMENTS = [
 
 
 class Command(LoggedCommandMixin, AtomicHandleMixin, BaseCommand):
-    help = "Import the cities, departments, EPCI and regions from the Découpage Administratif API."
+    help = "Import the cities, arrondissements, departments, EPCI and regions from the Découpage Administratif API."
     ATOMIC_HANDLE = True
 
     def add_arguments(self, parser) -> None:
         parser.add_argument(
             "--scope",
-            choices=["all", "regions", "departements", "epci", "communes"],
+            choices=["all", "regions", "departements", "epci", "communes", "arrondissements"],
             default="all",
             help="Restrict the import to a specific entity type (default: all).",
         )
@@ -87,6 +87,7 @@ class Command(LoggedCommandMixin, AtomicHandleMixin, BaseCommand):
             "departements": importer.import_departements,
             "epci": importer.import_epci,
             "communes": importer.import_communes,
+            "arrondissements": importer.import_arrondissements,
         }
 
         self.stdout.write(self.style.NOTICE(f"Starting import '{scope}'..."))

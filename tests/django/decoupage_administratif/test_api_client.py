@@ -39,6 +39,21 @@ def test_fetch_communes_calls_expected_endpoint(client, api_client):
     )
 
 
+def test_fetch_arrondissements_calls_expected_endpoint(client, api_client):
+    data = api_client.fetch_arrondissements()
+
+    assert data == client.get.return_value.json.return_value
+    client.get.assert_called_once_with(
+        "https://example.com/communes",
+        params={
+            "type": "arrondissement-municipal",
+            "fields": "code,nom,codeDepartement,codeRegion,codesPostaux,population,centre",
+            "format": "json",
+        },
+        timeout=5,
+    )
+
+
 def test_fetch_departements_calls_expected_endpoint(client, api_client):
     data = api_client.fetch_departements()
 
