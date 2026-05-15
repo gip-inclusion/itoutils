@@ -90,7 +90,15 @@ def test_are_department_codes(codes, expected):
     [
         pytest.param("france", FRANCE_INFO, id="literal_france"),
         pytest.param("99100", FRANCE_INFO, id="insee_france"),
-        pytest.param("99001", EMPTY_INFO, id="foreign_country"),
+        pytest.param(
+            "99001",
+            {
+                "code": None,
+                "label": "Pays étranger",
+                "type": {"value": AdminDivisionType.COUNTRY.value, "label": AdminDivisionType.COUNTRY.label},
+            },
+            id="foreign_country",
+        ),
         pytest.param("unknown", EMPTY_INFO, id="unknown_code"),
         pytest.param(
             "75056",
@@ -166,7 +174,7 @@ def test_get_region_if_all_department_codes_belong_to_it(all_objects, department
         # Codes pays
         pytest.param(["france"], "France entière", id="literal_france"),
         pytest.param(["99100"], "France entière", id="insee_france"),
-        pytest.param(["99001"], "", id="foreign_country"),
+        pytest.param(["99001"], "Pays étranger", id="foreign_country"),
         # Code unique — non trouvé
         pytest.param(["99999"], "", id="city_not_found"),
         pytest.param(["99"], "", id="department_not_found"),
