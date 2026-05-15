@@ -48,6 +48,26 @@ class DecoupageAdministratifAPIClient:
             },
         )
 
+    def fetch_arrondissements(self) -> list[dict[str, Any]]:
+        return self._get(
+            "/communes",
+            params={
+                "type": "arrondissement-municipal",
+                "fields": ",".join(
+                    [
+                        "code",
+                        "nom",
+                        "codeDepartement",
+                        "codeRegion",
+                        "codesPostaux",
+                        "population",
+                        "centre",
+                    ]
+                ),
+                "format": "json",
+            },
+        )
+
     def fetch_departements(self) -> list[dict[str, Any]]:
         return self._get(
             "/departements",

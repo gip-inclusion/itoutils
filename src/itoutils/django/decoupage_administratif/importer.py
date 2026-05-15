@@ -92,9 +92,32 @@ class DecoupageAdministratifImporter:
                 },
             )
 
+    @transaction.atomic
+    def import_arrondissements(self) -> None:
+        payload = self.client.fetch_arrondissements()
+        for arrondissement in payload:
+            code = arrondissement["code"]
+            name = arrondissement["nom"]
+            normalized_name = normalize_string_for_search(name)
+            normalized_name += f" {code_insee_to_code_dept(code)}"
+
+            City.objects.update_or_create(
+                code=code,
+                defaults={
+                    "name": name,
+                    "department": arrondissement.get("codeDepartement", ""),
+                    "region": arrondissement.get("codeRegion", ""),
+                    "postal_codes": sorted(arrondissement.get("codesPostaux", [])),
+                    "population": arrondissement.get("population"),
+                    "center": _parse_center(arrondissement.get("centre")),
+                    "normalized_name": normalized_name,
+                },
+            )
+
     def import_all(self) -> None:
         """Import all entities in dependency order."""
         self.import_regions()
         self.import_departements()
         self.import_epci()
         self.import_communes()
+        self.import_arrondissements()
