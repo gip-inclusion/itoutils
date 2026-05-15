@@ -31,10 +31,10 @@ def get_division_info_for_division_code(division_code: str) -> dict:
     if re.match(COUNTRY_CODE_PATTERN, division_code):
         return {
             "code": None,
-            "label": "",
+            "label": "Pays étranger",
             "type": {
-                "value": None,
-                "label": "",
+                "value": AdminDivisionType.COUNTRY.value,
+                "label": AdminDivisionType.COUNTRY.label,
             },
         }
 
