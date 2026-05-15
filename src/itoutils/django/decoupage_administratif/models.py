@@ -14,44 +14,6 @@ class AdminDivisionType(models.TextChoices):
     COUNTRY = ("country", "France entière")
 
 
-sentinel = object()
-
-
-class GeoManager(models.Manager):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._cache = {}
-
-
-# Progressive cache for tables with many entities
-class ManyGeoManager(GeoManager):
-    def get_from_code(self, code):
-        code = code.upper()
-        value = self._cache.get(code, sentinel)
-        if value is not sentinel:
-            return value
-
-        try:
-            value = self.get(code=code)
-        except self.model.DoesNotExist:
-            value = None
-        self._cache[code] = value
-        return value
-
-
-# Instant cache for tables with few entities
-# We run the query once and reuse the results
-class FewGeoManager(GeoManager):
-    def get_from_code(self, code):
-        code = code.upper()
-        if len(self._cache):
-            return self._cache.get(code)
-
-        values = self.all()
-        self._cache = {value.code: value for value in values}
-        return self._cache.get(code)
-
-
 class AdminDivision(models.Model):
     """Base model for administrative divisions."""
 
@@ -63,10 +25,6 @@ class AdminDivision(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.code})"
-
-
-class CityManager(ManyGeoManager):
-    pass
 
 
 class City(AdminDivision):
@@ -81,7 +39,6 @@ class City(AdminDivision):
     )
     population = models.IntegerField(null=True, blank=True, default=None)
     center = gis_models.PointField(srid=WGS84, geography=True)
-    objects = CityManager()
 
     class Meta:
         verbose_name = "commune"
@@ -95,14 +52,9 @@ class City(AdminDivision):
         ]
 
 
-class DepartmentManager(FewGeoManager):
-    pass
-
-
 class Department(AdminDivision):
     code = models.CharField(max_length=3, primary_key=True)
     region = models.CharField(max_length=3, db_index=True)
-    objects = DepartmentManager()
 
     class Meta:
         verbose_name = "département"
@@ -114,10 +66,6 @@ class Department(AdminDivision):
                 opclasses=("gin_trgm_ops",),
             )
         ]
-
-
-class EPCIManager(ManyGeoManager):
-    pass
 
 
 class EPCI(AdminDivision):
@@ -132,7 +80,6 @@ class EPCI(AdminDivision):
         blank=True,
         default=list,
     )
-    objects = EPCIManager()
 
     class Meta:
         verbose_name = "EPCI"
@@ -146,13 +93,8 @@ class EPCI(AdminDivision):
         ]
 
 
-class RegionManager(FewGeoManager):
-    pass
-
-
 class Region(AdminDivision):
     code = models.CharField(max_length=3, primary_key=True)
-    objects = RegionManager()
 
     class Meta:
         verbose_name = "region"
