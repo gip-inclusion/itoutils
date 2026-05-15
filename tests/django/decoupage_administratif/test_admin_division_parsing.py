@@ -18,53 +18,6 @@ FRANCE_INFO = {
 }
 
 
-@pytest.fixture
-def all_objects(db):
-    City.objects.create(
-        code="75056",
-        name="Paris",
-        department="75",
-        epci="200054781",
-        region="11",
-        postal_codes=["75001"],
-        center=Point(2.347, 48.8589, srid=WGS84),
-    )
-    City.objects.create(
-        code="13001",
-        name="Aix-en-Provence",
-        department="13",
-        epci="200054781",
-        region="93",
-        postal_codes=["13100"],
-        center=Point(4.8357, 45.7640, srid=WGS84),
-    )
-    EPCI.objects.create(
-        code="200054781",
-        name="Métropole du Grand Paris",
-        departments=["75", "77", "78", "91", "92", "93", "94", "95"],
-        regions=["11"],
-    )
-    Region.objects.create(code="11", name="Île-de-France")
-    Region.objects.create(code="94", name="Corse")
-    Department.objects.create(code="75", name="Paris", region="11")
-    Department.objects.create(code="77", name="Seine-et-Marne", region="11")
-    Department.objects.create(code="78", name="Yvelines", region="11")
-    Department.objects.create(code="91", name="Essonne", region="11")
-    Department.objects.create(code="92", name="Hauts-de-Seine", region="11")
-    Department.objects.create(code="93", name="Seine-Saint-Denis", region="11")
-    Department.objects.create(code="94", name="Val-de-Marne", region="11")
-    Department.objects.create(code="95", name="Val-d'Oise", region="11")
-    Department.objects.create(code="2A", name="Corse-du-Sud", region="94")
-    Department.objects.create(code="2B", name="Haute-Corse", region="94")
-    Department.objects.create(code="971", name="Guadeloupe", region="01")
-    # Départements pointant vers une région inexistante en base
-    Department.objects.create(code="A1", name="Dept A1", region="XX")
-    Department.objects.create(code="A2", name="Dept A2", region="XX")
-
-
-# ── are_department_codes ──────────────────────────────────────────────────────
-
-
 @pytest.mark.parametrize(
     "codes, expected",
     [
@@ -80,9 +33,6 @@ def all_objects(db):
 )
 def test_are_department_codes(codes, expected):
     assert are_department_codes(codes) == expected
-
-
-# ── get_division_info_for_division_code ───────────────────────────────────────
 
 
 @pytest.mark.parametrize(
@@ -132,11 +82,26 @@ def test_are_department_codes(codes, expected):
         pytest.param("999999999", EMPTY_INFO, id="epci_not_found"),
     ],
 )
-def test_get_division_info_for_division_code(all_objects, division_code, expected):
+@pytest.mark.django_db
+def test_get_division_info_for_division_code(division_code, expected):
+    City.objects.create(
+        code="75056",
+        name="Paris",
+        department="75",
+        epci="200054781",
+        region="11",
+        postal_codes=["75001"],
+        center=Point(2.347, 48.8589, srid=WGS84),
+    )
+    Department.objects.create(code="75", name="Paris", region="11")
+    EPCI.objects.create(
+        code="200054781",
+        name="Métropole du Grand Paris",
+        departments=["75", "77", "78", "91", "92", "93", "94", "95"],
+        regions=["11"],
+    )
+
     assert get_division_info_for_division_code(division_code) == expected
-
-
-# ── get_region_if_all_department_codes_belong_to_it ───────────────────────────
 
 
 @pytest.mark.parametrize(
@@ -156,12 +121,26 @@ def test_get_division_info_for_division_code(all_objects, division_code, expecte
         pytest.param(["2A", "2B"], "Corse", id="all_depts_corse"),
     ],
 )
-def test_get_region_if_all_department_codes_belong_to_it(all_objects, department_codes, expected_region_name):
+@pytest.mark.django_db
+def test_get_region_if_all_department_codes_belong_to_it(department_codes, expected_region_name):
+    Region.objects.create(code="11", name="Île-de-France")
+    Region.objects.create(code="94", name="Corse")
+    Department.objects.create(code="75", name="Paris", region="11")
+    Department.objects.create(code="77", name="Seine-et-Marne", region="11")
+    Department.objects.create(code="78", name="Yvelines", region="11")
+    Department.objects.create(code="91", name="Essonne", region="11")
+    Department.objects.create(code="92", name="Hauts-de-Seine", region="11")
+    Department.objects.create(code="93", name="Seine-Saint-Denis", region="11")
+    Department.objects.create(code="94", name="Val-de-Marne", region="11")
+    Department.objects.create(code="95", name="Val-d'Oise", region="11")
+    Department.objects.create(code="2A", name="Corse-du-Sud", region="94")
+    Department.objects.create(code="2B", name="Haute-Corse", region="94")
+    # Départements pointant vers une région inexistante en base
+    Department.objects.create(code="A1", name="Dept A1", region="XX")
+    Department.objects.create(code="A2", name="Dept A2", region="XX")
+
     result = get_region_if_all_department_codes_belong_to_it(department_codes)
     assert (result.name if result else None) == expected_region_name
-
-
-# ── get_division_label ────────────────────────────────────────────────────────
 
 
 @pytest.mark.parametrize(
@@ -198,5 +177,44 @@ def test_get_region_if_all_department_codes_belong_to_it(all_objects, department
         pytest.param(["2A", "2B"], "Corse", id="all_depts_corse"),
     ],
 )
-def test_get_division_label(all_objects, zone_codes, expected):
+@pytest.mark.django_db
+def test_get_division_label(zone_codes, expected):
+    City.objects.create(
+        code="75056",
+        name="Paris",
+        department="75",
+        epci="200054781",
+        region="11",
+        postal_codes=["75001"],
+        center=Point(2.347, 48.8589, srid=WGS84),
+    )
+    City.objects.create(
+        code="13001",
+        name="Aix-en-Provence",
+        department="13",
+        epci="200054781",
+        region="93",
+        postal_codes=["13100"],
+        center=Point(4.8357, 45.7640, srid=WGS84),
+    )
+    EPCI.objects.create(
+        code="200054781",
+        name="Métropole du Grand Paris",
+        departments=["75", "77", "78", "91", "92", "93", "94", "95"],
+        regions=["11"],
+    )
+    Region.objects.create(code="11", name="Île-de-France")
+    Region.objects.create(code="94", name="Corse")
+    Department.objects.create(code="75", name="Paris", region="11")
+    Department.objects.create(code="77", name="Seine-et-Marne", region="11")
+    Department.objects.create(code="78", name="Yvelines", region="11")
+    Department.objects.create(code="91", name="Essonne", region="11")
+    Department.objects.create(code="92", name="Hauts-de-Seine", region="11")
+    Department.objects.create(code="93", name="Seine-Saint-Denis", region="11")
+    Department.objects.create(code="94", name="Val-de-Marne", region="11")
+    Department.objects.create(code="95", name="Val-d'Oise", region="11")
+    Department.objects.create(code="2A", name="Corse-du-Sud", region="94")
+    Department.objects.create(code="2B", name="Haute-Corse", region="94")
+    Department.objects.create(code="971", name="Guadeloupe", region="01")
+
     assert get_division_label(zone_codes) == expected
