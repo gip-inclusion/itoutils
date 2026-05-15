@@ -64,6 +64,9 @@ class Command(LoggedCommandMixin, AtomicHandleMixin, BaseCommand):
         parser.add_argument("--wet-run", dest="wet_run", action="store_true")
 
     def _create_overseas_departments(self) -> None:
+        # Certains territoires d’outre-mer ne sont pas officiellement des départements,
+        # mais doivent néanmoins figurer en base avec leur code département conventionnel.
+        # Comme ils ne sont pas retournés par l’API, on les ajoute ici manuellement.
         for overseas_department in OVERSEAS_DEPARTMENTS:
             Department.objects.update_or_create(
                 code=overseas_department["code"],
