@@ -23,7 +23,8 @@ SCOPES_AND_METHODS = [
 ]
 
 
-def test_command_runs_full_import_by_default(db, mocker):
+@pytest.mark.django_db
+def test_command_runs_full_import_by_default(mocker):
     importer_cls = mocker.patch(IMPORTER_PATH)
 
     call_command("import_decoupage_administratif")
@@ -31,8 +32,9 @@ def test_command_runs_full_import_by_default(db, mocker):
     importer_cls.return_value.import_all.assert_called_once_with()
 
 
+@pytest.mark.django_db
 @pytest.mark.parametrize("scope,method_name", SCOPES_AND_METHODS)
-def test_command_supports_scope_argument(db, mocker, scope, method_name):
+def test_command_supports_scope_argument(mocker, scope, method_name):
     importer_cls = mocker.patch(IMPORTER_PATH)
     importer_instance = importer_cls.return_value
 
@@ -44,7 +46,8 @@ def test_command_supports_scope_argument(db, mocker, scope, method_name):
             getattr(importer_instance, other_method_name).assert_not_called()
 
 
-def test_command_prints_progress_messages(db, mocker):
+@pytest.mark.django_db
+def test_command_prints_progress_messages(mocker):
     mocker.patch(IMPORTER_PATH)
     out = io.StringIO()
 
@@ -55,6 +58,7 @@ def test_command_prints_progress_messages(db, mocker):
     assert "Import completed." in output
 
 
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     "scope,expected_count",
     [
@@ -66,7 +70,7 @@ def test_command_prints_progress_messages(db, mocker):
         ("all", len(OVERSEAS_DEPARTMENTS)),
     ],
 )
-def test_command_creates_overseas_departments_only_for_all_or_departements(db, mocker, scope, expected_count):
+def test_command_creates_overseas_departments_only_for_all_or_departements(mocker, scope, expected_count):
     mocker.patch(IMPORTER_PATH)
 
     call_command("import_decoupage_administratif", scope=scope, wet_run=True)
