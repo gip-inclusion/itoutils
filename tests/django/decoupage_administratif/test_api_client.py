@@ -32,7 +32,7 @@ def test_fetch_communes_calls_expected_endpoint(client, api_client):
     client.get.assert_called_once_with(
         "https://example.com/communes",
         params={
-            "fields": "code,nom,codeDepartement,codeRegion,codesPostaux,codeEpci,population,centre",
+            "fields": "code,nom,codeDepartement",
             "format": "json",
         },
         timeout=5,
@@ -47,7 +47,7 @@ def test_fetch_arrondissements_calls_expected_endpoint(client, api_client):
         "https://example.com/communes",
         params={
             "type": "arrondissement-municipal",
-            "fields": "code,nom,codeDepartement,codeRegion,codesPostaux,population,centre",
+            "fields": "code,nom",
             "format": "json",
         },
         timeout=5,
@@ -71,10 +71,7 @@ def test_fetch_epci_calls_expected_endpoint(client, api_client):
     assert data == client.get.return_value.json.return_value
     client.get.assert_called_once_with(
         "https://example.com/epcis",
-        params={
-            "fields": "code,nom,codesDepartements,codesRegions",
-            "format": "json",
-        },
+        params={"fields": "code,nom", "format": "json"},
         timeout=5,
     )
 

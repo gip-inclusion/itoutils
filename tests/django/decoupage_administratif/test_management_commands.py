@@ -80,5 +80,4 @@ def test_command_creates_overseas_departments_only_for_all_or_departements(mocke
         for overseas_department in OVERSEAS_DEPARTMENTS:
             department = Department.objects.get(code=overseas_department["code"])
             assert department.name == overseas_department["name"]
-            assert department.normalized_name == overseas_department["normalized_name"]
             assert department.region == overseas_department["code"]

@@ -1,24 +1,11 @@
 import logging
 
-from django.contrib.gis.geos import Point
 from django.db import transaction
 
 from .api_client import DecoupageAdministratifAPIClient
-from .constants import WGS84
 from .models import EPCI, City, Department, Region
-from .utils import code_insee_to_code_dept, normalize_string_for_search
 
 logger = logging.getLogger(__name__)
-
-
-def _parse_center(center_data: dict | None) -> Point | None:
-    """Parse the API center field into a PostGIS Point."""
-    if not center_data or center_data.get("type") != "Point":
-        return None
-    coords = center_data.get("coordinates")
-    if not coords or len(coords) != 2:
-        return None
-    return Point(coords[0], coords[1], srid=WGS84)
 
 
 class DecoupageAdministratifImporter:
@@ -31,12 +18,13 @@ class DecoupageAdministratifImporter:
     def import_regions(self) -> None:
         payload = self.client.fetch_regions()
         for region in payload:
+            code = region["code"]
             name = region["nom"]
+
             Region.objects.update_or_create(
-                code=region["code"],
+                code=code,
                 defaults={
                     "name": name,
-                    "normalized_name": normalize_string_for_search(name),
                 },
             )
 
@@ -44,13 +32,15 @@ class DecoupageAdministratifImporter:
     def import_departements(self) -> None:
         payload = self.client.fetch_departements()
         for dept in payload:
+            code = dept["code"]
             name = dept["nom"]
+            region = dept["codeRegion"]
+
             Department.objects.update_or_create(
-                code=dept["code"],
+                code=code,
                 defaults={
                     "name": name,
-                    "region": dept["codeRegion"],
-                    "normalized_name": normalize_string_for_search(name),
+                    "region": region,
                 },
             )
 
@@ -58,14 +48,13 @@ class DecoupageAdministratifImporter:
     def import_epci(self) -> None:
         payload = self.client.fetch_epci()
         for epci in payload:
+            code = epci["code"]
             name = epci["nom"]
+
             EPCI.objects.update_or_create(
-                code=epci["code"],
+                code=code,
                 defaults={
                     "name": name,
-                    "departments": sorted(epci.get("codesDepartements", [])),
-                    "regions": sorted(epci.get("codesRegions", [])),
-                    "normalized_name": normalize_string_for_search(name),
                 },
             )
 
@@ -75,20 +64,13 @@ class DecoupageAdministratifImporter:
         for commune in payload:
             code = commune["code"]
             name = commune["nom"]
-            normalized_name = normalize_string_for_search(name)
-            normalized_name += f" {code_insee_to_code_dept(code)}"
+            department = commune["codeDepartement"]
 
             City.objects.update_or_create(
                 code=code,
                 defaults={
                     "name": name,
-                    "department": commune.get("codeDepartement", ""),
-                    "epci": commune.get("codeEpci", ""),
-                    "region": commune.get("codeRegion", ""),
-                    "postal_codes": sorted(commune.get("codesPostaux", [])),
-                    "population": commune.get("population"),
-                    "center": _parse_center(commune.get("centre")),
-                    "normalized_name": normalized_name,
+                    "department": department,
                 },
             )
 
@@ -98,19 +80,11 @@ class DecoupageAdministratifImporter:
         for arrondissement in payload:
             code = arrondissement["code"]
             name = arrondissement["nom"]
-            normalized_name = normalize_string_for_search(name)
-            normalized_name += f" {code_insee_to_code_dept(code)}"
 
             City.objects.update_or_create(
                 code=code,
                 defaults={
                     "name": name,
-                    "department": arrondissement.get("codeDepartement", ""),
-                    "region": arrondissement.get("codeRegion", ""),
-                    "postal_codes": sorted(arrondissement.get("codesPostaux", [])),
-                    "population": arrondissement.get("population"),
-                    "center": _parse_center(arrondissement.get("centre")),
-                    "normalized_name": normalized_name,
                 },
             )
 
