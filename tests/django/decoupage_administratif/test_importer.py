@@ -4,9 +4,13 @@ import pytest
 
 from itoutils.django.decoupage_administratif.importer import (
     DecoupageAdministratifImporter,
-    _parse_center,
 )
-from itoutils.django.decoupage_administratif.models import EPCI, City, Department, Region
+from itoutils.django.decoupage_administratif.models import (
+    EPCI,
+    City,
+    Department,
+    Region,
+)
 
 
 @pytest.fixture
@@ -19,30 +23,95 @@ def importer(client):
     return DecoupageAdministratifImporter(client=client)
 
 
+@pytest.mark.parametrize(
+    ("model", "fetch_method", "import_method", "code", "first_name", "second_name"),
+    [
+        pytest.param(
+            Region,
+            "fetch_regions",
+            "import_regions",
+            "44",
+            "Petit Est",
+            "Grand Est",
+            id="region",
+        ),
+        pytest.param(
+            Department,
+            "fetch_departements",
+            "import_departements",
+            "75",
+            "Île-de-France",
+            "Paris",
+            id="department",
+        ),
+        pytest.param(
+            EPCI,
+            "fetch_epci",
+            "import_epci",
+            "200054781",
+            "Grand Paris",
+            "Métropole du Grand Paris",
+            id="epci",
+        ),
+        pytest.param(
+            City,
+            "fetch_communes",
+            "import_communes",
+            "75056",
+            "Ville de Paris",
+            "Paris",
+            id="commune",
+        ),
+        pytest.param(
+            City,
+            "fetch_arrondissements",
+            "import_arrondissements",
+            "75101",
+            "Paris 1",
+            "Paris 1er Arrondissement",
+            id="arrondissement",
+        ),
+    ],
+)
 @pytest.mark.django_db
-def test_import_regions_updates_names(client, importer):
-    Region.objects.create(code="44", name="Old Name")
-    client.fetch_regions.return_value = [
-        {"code": "44", "nom": "Grand Est"},
-        {"code": "01", "nom": "Guadeloupe"},
-    ]
+def test_import_create_and_update(
+    client,
+    importer,
+    model,
+    fetch_method,
+    import_method,
+    code,
+    first_name,
+    second_name,
+):
+    assert model.objects.count() == 0
 
-    importer.import_regions()
+    # Création
+    record = {"code": code, "nom": first_name}
+    if model is City:
+        record["codeDepartement"] = "74"
+    if model is Department:
+        record["codeRegion"] = "10"
+    getattr(client, fetch_method).return_value = [record]
+    getattr(importer, import_method)()
+    assert model.objects.count() == 1
+    instance = model.objects.get(code=code)
+    assert instance.name == first_name
+    if model is Department:
+        assert instance.region == "10"
 
-    assert Region.objects.count() == 2
-    assert Region.objects.get(code="44").name == "Grand Est"
-    assert Region.objects.get(code="01").name == "Guadeloupe"
-
-
-@pytest.mark.django_db
-def test_import_regions_sets_normalized_name(client, importer):
-    client.fetch_regions.return_value = [
-        {"code": "44", "nom": "Grand Est"},
-    ]
-
-    importer.import_regions()
-
-    assert Region.objects.get(code="44").normalized_name == "GRAND EST"
+    # Mise à jour
+    record["nom"] = second_name
+    if model is City:
+        record["codeDepartement"] = "75"
+    if model is Department:
+        record["codeRegion"] = "11"
+    getattr(importer, import_method)()
+    assert model.objects.count() == 1
+    instance = model.objects.get(code=code)
+    assert instance.name == second_name
+    if model is Department:
+        assert instance.region == "11"
 
 
 @pytest.mark.django_db
@@ -60,128 +129,11 @@ def test_import_departements_sets_region_codes(client, importer):
 
 
 @pytest.mark.django_db
-def test_import_departements_sets_normalized_name(client, importer):
-    client.fetch_departements.return_value = [
-        {"code": "75", "nom": "Paris", "codeRegion": "11"},
-    ]
-
-    importer.import_departements()
-
-    assert Department.objects.get(code="75").normalized_name == "PARIS"
-
-
-@pytest.mark.django_db
-def test_import_epci_defaults_empty_lists(client, importer):
-    client.fetch_epci.return_value = [
-        {
-            "code": "200069193",
-            "nom": "Métropole de Lyon",
-            # intentionally missing optional fields
-        }
-    ]
-
-    importer.import_epci()
-
-    epci = EPCI.objects.get(code="200069193")
-    assert epci.departments == []
-    assert epci.regions == []
-
-
-@pytest.mark.django_db
-def test_import_epci_sets_normalized_name(client, importer):
-    client.fetch_epci.return_value = [
-        {
-            "code": "200054781",
-            "nom": "Métropole du Grand Paris",
-            "codesDepartements": ["75"],
-            "codesRegions": ["11"],
-        }
-    ]
-
-    importer.import_epci()
-
-    assert EPCI.objects.get(code="200054781").normalized_name == "METROPOLE DU GRAND PARIS"
-
-
-@pytest.mark.django_db
-def test_import_communes_handles_missing_values(client, importer):
-    client.fetch_communes.return_value = [
-        {
-            "code": "75056",
-            "nom": "Paris",
-            "codesPostaux": ["75001"],
-            "centre": {"type": "Point", "coordinates": [2.347, 48.8589]},
-        }
-    ]
-
-    importer.import_communes()
-
-    city = City.objects.get(code="75056")
-    assert city.department == ""
-    assert city.epci == ""
-    assert city.region == ""
-    assert city.postal_codes == ["75001"]
-    assert city.population is None
-    assert city.center is not None
-    assert city.center.x == pytest.approx(2.347, abs=1e-3)
-    assert city.center.y == pytest.approx(48.8589, abs=1e-3)
-
-
-@pytest.mark.django_db
-def test_import_communes_sets_population_and_center(client, importer):
-    client.fetch_communes.return_value = [
-        {
-            "code": "75056",
-            "nom": "Paris",
-            "codeDepartement": "75",
-            "codeRegion": "11",
-            "codeEpci": "200054781",
-            "codesPostaux": ["75001"],
-            "population": 2161000,
-            "centre": {"type": "Point", "coordinates": [2.347, 48.8589]},
-        }
-    ]
-
-    importer.import_communes()
-
-    city = City.objects.get(code="75056")
-    assert city.population == 2161000
-    assert city.center is not None
-    assert city.center.x == pytest.approx(2.347, abs=1e-3)
-    assert city.center.y == pytest.approx(48.8589, abs=1e-3)
-
-
-@pytest.mark.django_db
-def test_import_communes_sets_normalized_name_with_department(client, importer):
-    client.fetch_communes.return_value = [
-        {
-            "code": "75056",
-            "nom": "Paris",
-            "codeDepartement": "75",
-            "codeRegion": "11",
-            "codesPostaux": ["75001"],
-            "centre": {"type": "Point", "coordinates": [2.347, 48.8589]},
-        }
-    ]
-
-    importer.import_communes()
-
-    city = City.objects.get(code="75056")
-    assert "PARIS" in city.normalized_name
-    assert "75" in city.normalized_name
-
-
-@pytest.mark.django_db
 def test_import_arrondissements_creates_city(client, importer):
     client.fetch_arrondissements.return_value = [
         {
             "code": "75101",
             "nom": "Paris 1er Arrondissement",
-            "codeDepartement": "75",
-            "codeRegion": "11",
-            "codesPostaux": ["75001"],
-            "population": 15114,
-            "centre": {"type": "Point", "coordinates": [2.347, 48.8589]},
         }
     ]
 
@@ -189,34 +141,6 @@ def test_import_arrondissements_creates_city(client, importer):
 
     city = City.objects.get(code="75101")
     assert city.name == "Paris 1er Arrondissement"
-    assert city.department == "75"
-    assert city.region == "11"
-    assert city.epci == ""
-    assert city.postal_codes == ["75001"]
-    assert city.population == 15114
-    assert city.center is not None
-    assert city.center.x == pytest.approx(2.347, abs=1e-3)
-    assert city.center.y == pytest.approx(48.8589, abs=1e-3)
-
-
-@pytest.mark.django_db
-def test_import_arrondissements_sets_normalized_name_with_department(client, importer):
-    client.fetch_arrondissements.return_value = [
-        {
-            "code": "13201",
-            "nom": "Marseille 1er Arrondissement",
-            "codeDepartement": "13",
-            "codeRegion": "93",
-            "codesPostaux": ["13001"],
-            "centre": {"type": "Point", "coordinates": [5.3698, 43.2965]},
-        }
-    ]
-
-    importer.import_arrondissements()
-
-    city = City.objects.get(code="13201")
-    assert "MARSEILLE 1ER ARRONDISSEMENT" in city.normalized_name
-    assert "13" in city.normalized_name
 
 
 def test_import_all_runs_every_step(importer):
@@ -234,31 +158,3 @@ def test_import_all_runs_every_step(importer):
     import_epci.assert_called_once_with()
     import_communes.assert_called_once_with()
     import_arrondissements.assert_called_once_with()
-
-
-def test_parse_center_with_valid_point():
-    result = _parse_center({"type": "Point", "coordinates": [2.347, 48.8589]})
-
-    assert result is not None
-    assert result.x == pytest.approx(2.347, abs=1e-3)
-    assert result.y == pytest.approx(48.8589, abs=1e-3)
-
-
-def test_parse_center_with_none():
-    assert _parse_center(None) is None
-
-
-def test_parse_center_with_empty_dict():
-    assert _parse_center({}) is None
-
-
-def test_parse_center_with_wrong_type():
-    assert _parse_center({"type": "Polygon", "coordinates": [[0, 0], [1, 1]]}) is None
-
-
-def test_parse_center_with_missing_coordinates():
-    assert _parse_center({"type": "Point"}) is None
-
-
-def test_parse_center_with_invalid_coordinates():
-    assert _parse_center({"type": "Point", "coordinates": [2.347]}) is None

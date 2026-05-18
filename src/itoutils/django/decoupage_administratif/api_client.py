@@ -37,11 +37,6 @@ class DecoupageAdministratifAPIClient:
                         "code",
                         "nom",
                         "codeDepartement",
-                        "codeRegion",
-                        "codesPostaux",
-                        "codeEpci",
-                        "population",
-                        "centre",
                     ]
                 ),
                 "format": "json",
@@ -57,11 +52,6 @@ class DecoupageAdministratifAPIClient:
                     [
                         "code",
                         "nom",
-                        "codeDepartement",
-                        "codeRegion",
-                        "codesPostaux",
-                        "population",
-                        "centre",
                     ]
                 ),
                 "format": "json",
@@ -71,7 +61,16 @@ class DecoupageAdministratifAPIClient:
     def fetch_departements(self) -> list[dict[str, Any]]:
         return self._get(
             "/departements",
-            params={"fields": "code,nom,codeRegion", "format": "json"},
+            params={
+                "fields": ",".join(
+                    [
+                        "code",
+                        "nom",
+                        "codeRegion",
+                    ]
+                ),
+                "format": "json",
+            },
         )
 
     def fetch_epci(self) -> list[dict[str, Any]]:
@@ -82,8 +81,6 @@ class DecoupageAdministratifAPIClient:
                     [
                         "code",
                         "nom",
-                        "codesDepartements",
-                        "codesRegions",
                     ]
                 ),
                 "format": "json",
@@ -93,5 +90,13 @@ class DecoupageAdministratifAPIClient:
     def fetch_regions(self) -> list[dict[str, Any]]:
         return self._get(
             "/regions",
-            params={"fields": "code,nom", "format": "json"},
+            params={
+                "fields": ",".join(
+                    [
+                        "code",
+                        "nom",
+                    ]
+                ),
+                "format": "json",
+            },
         )

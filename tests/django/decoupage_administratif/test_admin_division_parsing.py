@@ -1,5 +1,4 @@
 import pytest
-from django.contrib.gis.geos import Point
 
 from itoutils.django.decoupage_administratif.admin_division_parsing import (
     are_department_codes,
@@ -7,7 +6,6 @@ from itoutils.django.decoupage_administratif.admin_division_parsing import (
     get_division_label,
     get_region_if_all_department_codes_belong_to_it,
 )
-from itoutils.django.decoupage_administratif.constants import WGS84
 from itoutils.django.decoupage_administratif.models import EPCI, AdminDivisionType, City, Department, Region
 
 EMPTY_INFO = {"code": None, "label": "", "type": {"value": None, "label": ""}}
@@ -88,17 +86,11 @@ def test_get_division_info_for_division_code(division_code, expected):
         code="75056",
         name="Paris",
         department="75",
-        epci="200054781",
-        region="11",
-        postal_codes=["75001"],
-        center=Point(2.347, 48.8589, srid=WGS84),
     )
     Department.objects.create(code="75", name="Paris", region="11")
     EPCI.objects.create(
         code="200054781",
         name="Métropole du Grand Paris",
-        departments=["75", "77", "78", "91", "92", "93", "94", "95"],
-        regions=["11"],
     )
 
     assert get_division_info_for_division_code(division_code) == expected
@@ -183,25 +175,15 @@ def test_get_division_label(zone_codes, expected):
         code="75056",
         name="Paris",
         department="75",
-        epci="200054781",
-        region="11",
-        postal_codes=["75001"],
-        center=Point(2.347, 48.8589, srid=WGS84),
     )
     City.objects.create(
         code="13001",
         name="Aix-en-Provence",
         department="13",
-        epci="200054781",
-        region="93",
-        postal_codes=["13100"],
-        center=Point(4.8357, 45.7640, srid=WGS84),
     )
     EPCI.objects.create(
         code="200054781",
         name="Métropole du Grand Paris",
-        departments=["75", "77", "78", "91", "92", "93", "94", "95"],
-        regions=["11"],
     )
     Region.objects.create(code="11", name="Île-de-France")
     Region.objects.create(code="94", name="Corse")

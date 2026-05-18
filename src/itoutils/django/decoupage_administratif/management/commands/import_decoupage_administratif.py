@@ -10,42 +10,34 @@ OVERSEAS_DEPARTMENTS = [
     {
         "code": "975",
         "name": "Saint-Pierre-et-Miquelon",
-        "normalized_name": "SAINT PIERRE ET MIQUELON",
     },
     {
         "code": "977",
         "name": "Saint-Barthélemy",
-        "normalized_name": "SAINT BARTHELEMY",
     },
     {
         "code": "978",
         "name": "Saint-Martin",
-        "normalized_name": "SAINT MARTIN",
     },
     {
         "code": "984",
         "name": "Terres australes et antarctiques françaises",
-        "normalized_name": "TERRES AUSTRALES ET ANTARCTIQUES FRANCAISES",
     },
     {
         "code": "986",
         "name": "Wallis-et-Futuna",
-        "normalized_name": "WALLIS ET FUTUNA",
     },
     {
         "code": "987",
         "name": "Polynésie française",
-        "normalized_name": "POLYNESIE FRANCAISE",
     },
     {
         "code": "988",
         "name": "Nouvelle-Calédonie",
-        "normalized_name": "NOUVELLE CALEDONIE",
     },
     {
         "code": "989",
         "name": "Île de Clipperton",
-        "normalized_name": "ILE DE CLIPPERTON",
     },
 ]
 
@@ -72,7 +64,6 @@ class Command(LoggedCommandMixin, AtomicHandleMixin, BaseCommand):
                 code=overseas_department["code"],
                 defaults={
                     "name": overseas_department["name"],
-                    "normalized_name": overseas_department["normalized_name"],
                     "region": overseas_department["code"],
                 },
             )
