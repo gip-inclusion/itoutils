@@ -117,8 +117,24 @@ class TestClient:
         mock_nexus_api.post(nexus_url("structures")).mock(
             side_effect=httpx.ConnectError(message="[Errno 111] Connection refused")
         )
-        with pytest.raises(NexusAPIException):
+        with pytest.raises(NexusAPIException) as exc_info:
             self.client.send_structures(self.dummy_send_payload)
+        assert isinstance(exc_info.value.__cause__, httpx.ConnectError)
         assert caplog.messages == [
             "nexus POST:structures error=[Errno 111] Connection refused",
         ]
+        [record] = [r for r in caplog.records if r.name == "itoutils.django.nexus.api"]
+        assert record.exc_info[0] is httpx.ConnectError
+
+    def test_read_timeout(self, mock_nexus_api, caplog):
+        mock_nexus_api.post(nexus_url("structures")).mock(
+            side_effect=httpx.ReadTimeout(message="The read operation timed out")
+        )
+        with pytest.raises(NexusAPIException) as exc_info:
+            self.client.send_structures(self.dummy_send_payload)
+        assert isinstance(exc_info.value.__cause__, httpx.ReadTimeout)
+        assert caplog.messages == [
+            "nexus POST:structures error=The read operation timed out",
+        ]
+        [record] = [r for r in caplog.records if r.name == "itoutils.django.nexus.api"]
+        assert record.exc_info[0] is httpx.ReadTimeout
