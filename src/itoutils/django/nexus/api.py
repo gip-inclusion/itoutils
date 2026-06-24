@@ -21,11 +21,12 @@ class NexusAPIClient:
         try:
             response = self.client.request(method, url, **kwargs).raise_for_status()
         except httpx.HTTPError as exc:
+            err_response = getattr(exc, "response", None)
             try:
-                error = exc.response.json()
-                logger.exception(f"nexus {method}:{url} error=%s", error)
+                error = err_response.json() if err_response is not None else str(exc)
             except Exception:
-                logger.exception(f"nexus {method}:{url} error=%s", exc)
+                error = str(exc)
+            logger.exception(f"nexus {method}:{url} error=%s", error)
             raise NexusAPIException from exc
         if errors := response.json().get("errors"):
             logger.error(f"nexus {method}:{url} error=%s", errors)
