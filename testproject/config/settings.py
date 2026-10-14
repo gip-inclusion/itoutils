@@ -38,6 +38,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "testproject.testapp.nexus.middleware.AutoLoginMiddleware",
+    # Covers the middleware skip in assertSnapshotQueries query origins
+    "testproject.testapp.middleware.PassThroughMiddleware",
 ]
 
 ROOT_URLCONF = "testproject.config.urls"
