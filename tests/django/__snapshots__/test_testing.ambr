@@ -15,3 +15,113 @@
     ]),
   })
 # ---
+# name: test_assert_snapshot_queries_transaction_origin
+  dict({
+    'num_queries': 5,
+    'queries': list([
+      dict({
+        'origin': list([
+          'Atomic.__enter__[<site-packages>/django/db/transaction.py]',
+        ]),
+        'sql': 'BEGIN',
+      }),
+      dict({
+        'origin': list([
+          'QuerySet.count[<site-packages>/django/db/models/query.py]',
+          'VariableNode[testapp/item_count.html]',
+          'IncludeNode[testapp/item_list.html]',
+        ]),
+        'sql': '''
+          SELECT COUNT(*) AS "__count"
+          FROM "testapp_item"
+        ''',
+      }),
+      dict({
+        'origin': list([
+          'ForNode[testapp/item_list.html]',
+        ]),
+        'sql': '''
+          SELECT "testapp_item"."id",
+                 "testapp_item"."parent_id",
+                 "testapp_item"."category"
+          FROM "testapp_item"
+        ''',
+      }),
+      dict({
+        'origin': list([
+          'VariableNode[testapp/item_list.html]',
+          'ForNode[testapp/item_list.html]',
+        ]),
+        'sql': '''
+          SELECT "testapp_item"."id",
+                 "testapp_item"."parent_id",
+                 "testapp_item"."category"
+          FROM "testapp_item"
+          WHERE "testapp_item"."id" = %s
+          LIMIT 21
+        ''',
+      }),
+      dict({
+        'origin': list([
+          'Atomic.__exit__[<site-packages>/django/db/transaction.py]',
+        ]),
+        'sql': 'COMMIT',
+      }),
+    ]),
+  })
+# ---
+# name: test_assert_snapshot_queries_view_origin
+  dict({
+    'num_queries': 5,
+    'queries': list([
+      dict({
+        'origin': list([
+          'Atomic.__enter__[<site-packages>/django/db/transaction.py]',
+        ]),
+        'sql': 'SAVEPOINT "<snapshot>"',
+      }),
+      dict({
+        'origin': list([
+          'QuerySet.count[<site-packages>/django/db/models/query.py]',
+          'VariableNode[testapp/item_count.html]',
+          'IncludeNode[testapp/item_list.html]',
+        ]),
+        'sql': '''
+          SELECT COUNT(*) AS "__count"
+          FROM "testapp_item"
+        ''',
+      }),
+      dict({
+        'origin': list([
+          'ForNode[testapp/item_list.html]',
+        ]),
+        'sql': '''
+          SELECT "testapp_item"."id",
+                 "testapp_item"."parent_id",
+                 "testapp_item"."category"
+          FROM "testapp_item"
+        ''',
+      }),
+      dict({
+        'origin': list([
+          'VariableNode[testapp/item_list.html]',
+          'ForNode[testapp/item_list.html]',
+        ]),
+        'sql': '''
+          SELECT "testapp_item"."id",
+                 "testapp_item"."parent_id",
+                 "testapp_item"."category"
+          FROM "testapp_item"
+          WHERE "testapp_item"."id" = %s
+          LIMIT 21
+        ''',
+      }),
+      dict({
+        'origin': list([
+          'Atomic.__exit__[<site-packages>/django/db/transaction.py]',
+        ]),
+        'sql': 'RELEASE SAVEPOINT "<snapshot>"',
+      }),
+    ]),
+  })
+# ---
