@@ -3,7 +3,10 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-APPS_DIR = os.path.abspath(os.path.join(BASE_DIR, "testproject"))
+# assertSnapshotQueries keeps the frames of files under APPS_DIR in query origins, named relative to it, like the
+# apps of a real project. BASE_DIR is already the test project directory (this file lives in its config/ folder),
+# so testapp frames show up as testapp/...
+APPS_DIR = str(BASE_DIR)
 
 SECRET_KEY = "django-insecure-%am#r-wl5tx8vp6+l7o+6)3+1iipnex@otx_%dtov7gbnud5t0"
 
