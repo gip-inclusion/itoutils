@@ -30,6 +30,7 @@
           'QuerySet.count[<site-packages>/django/db/models/query.py]',
           'VariableNode[testapp/item_count.html]',
           'IncludeNode[testapp/item_list.html]',
+          'item_list[testapp/views.py]',
         ]),
         'sql': '''
           SELECT COUNT(*) AS "__count"
@@ -39,6 +40,7 @@
       dict({
         'origin': list([
           'ForNode[testapp/item_list.html]',
+          'item_list[testapp/views.py]',
         ]),
         'sql': '''
           SELECT "testapp_item"."id",
@@ -51,6 +53,7 @@
         'origin': list([
           'VariableNode[testapp/item_list.html]',
           'ForNode[testapp/item_list.html]',
+          'item_list[testapp/views.py]',
         ]),
         'sql': '''
           SELECT "testapp_item"."id",
@@ -85,6 +88,7 @@
           'QuerySet.count[<site-packages>/django/db/models/query.py]',
           'VariableNode[testapp/item_count.html]',
           'IncludeNode[testapp/item_list.html]',
+          'item_list[testapp/views.py]',
         ]),
         'sql': '''
           SELECT COUNT(*) AS "__count"
@@ -94,6 +98,7 @@
       dict({
         'origin': list([
           'ForNode[testapp/item_list.html]',
+          'item_list[testapp/views.py]',
         ]),
         'sql': '''
           SELECT "testapp_item"."id",
@@ -106,6 +111,7 @@
         'origin': list([
           'VariableNode[testapp/item_list.html]',
           'ForNode[testapp/item_list.html]',
+          'item_list[testapp/views.py]',
         ]),
         'sql': '''
           SELECT "testapp_item"."id",
