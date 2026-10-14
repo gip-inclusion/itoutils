@@ -1,8 +1,9 @@
-import inspect
 import linecache
 import os.path
 import re
-from collections import defaultdict
+import sys
+import traceback
+from collections import defaultdict, namedtuple
 from contextlib import contextmanager
 
 import sqlparse
@@ -124,13 +125,23 @@ def get_template_source_from_exception_info(node: Node, context) -> tuple[int, s
     return exception_info["line"], exception_info["name"]
 
 
+# The part of inspect.FrameInfo used by _detect_origin, without the costly source code lookups
+_FrameInfo = namedtuple("_FrameInfo", ["frame", "filename", "lineno", "function"])
+
+
+def _walk_frames(start_frame):
+    for frame, lineno in traceback.walk_stack(start_frame):
+        yield _FrameInfo(frame, frame.f_code.co_filename, lineno, frame.f_code.co_name)
+
+
 def _detect_origin(debug=False):
     parts = []
     # Ignore first 3 frames:
-    # - tests/utils/test.py::_detect_origin
-    # - tests/utils/test.py::debug_sql
-    # - <python>::contextlib.py::__exit__
-    for frame_info in inspect.stack()[3:]:
+    # - itoutils/django/testing.py::_detect_origin
+    # - itoutils/django/testing.py::debug_sql (or debug_transaction)
+    # - <python>/contextlib.py::__exit__
+    # The start frame must be taken here and not in a helper: sys._getframe(3) here is inspect.stack()[3]
+    for frame_info in _walk_frames(sys._getframe(3)):
         frame_filename = frame_info.filename
 
         if frame_info.function == "pytest_pyfunc_call" and "_pytest" in frame_filename:
